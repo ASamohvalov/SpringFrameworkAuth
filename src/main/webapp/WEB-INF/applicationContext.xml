@@ -20,18 +20,18 @@
               </property>
        </bean>
        <bean id="signUpController" class="com.srt.SpringAuth.controllers.SignUpController">
-              <constructor-arg ref="objectMapper" />
+              <constructor-arg ref="jsonMapper" />
               <constructor-arg ref="signUpService" />
               <constructor-arg ref="restControllerUtil" />
        </bean>
        <bean id="signInController" class="com.srt.SpringAuth.controllers.SignInController">
               <constructor-arg ref="restControllerUtil" />
-              <constructor-arg ref="objectMapper" />
+              <constructor-arg ref="jsonMapper" />
               <constructor-arg ref="signInService" />
        </bean>
 
        <!-- utils -->
-       <bean id="objectMapper" class="com.fasterxml.jackson.databind.ObjectMapper" />
+       <bean id="jsonMapper" class="com.fasterxml.jackson.databind.json.JsonMapper" />
        <bean id="passwordEncoder" class="com.srt.SpringAuth.utils.PBKDF2PasswordEncoder" />
        <bean id="restControllerUtil" class="com.srt.SpringAuth.utils.RestControllerUtil" />
        <bean id="validator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean" />
