@@ -9,6 +9,7 @@
                            http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
                            http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
 
+       <context:property-placeholder location="classpath:authenticationSource.properties" />
 
        <!-- controllers -->
        <bean class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
@@ -34,16 +35,24 @@
        <bean id="jsonMapper" class="com.fasterxml.jackson.databind.json.JsonMapper" />
        <bean id="passwordEncoder" class="com.srt.SpringAuth.utils.PBKDF2PasswordEncoder" />
        <bean id="restControllerUtil" class="com.srt.SpringAuth.utils.RestControllerUtil" />
-       <bean id="validator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean" />
+       <bean id="validator"
+              class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean" />
+       <bean id="hmacSha256" class="com.srt.SpringAuth.utils.HmacSha256" />
 
        <!-- services -->
        <bean id="signUpService" class="com.srt.SpringAuth.services.SignUpService">
               <constructor-arg ref="authDao" />
               <constructor-arg ref="passwordEncoder" />
+              <constructor-arg ref="validator" />
        </bean>
        <bean id="signInService" class="com.srt.SpringAuth.services.SignInService">
               <constructor-arg ref="authDao" />
               <constructor-arg ref="passwordEncoder" />
+              <constructor-arg ref="validator" />
+       </bean>
+       <bean id="authenticationService" class="com.srt.SpringAuth.services.AuthenticationService">
+              <property name="secretKey" value="${jwt.secretKey}" />
+              <property name="hmacSha256" ref="hmacSha256" />
        </bean>
 
        <!-- data -->

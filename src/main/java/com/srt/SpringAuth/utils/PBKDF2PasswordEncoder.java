@@ -1,61 +1,84 @@
 package com.srt.SpringAuth.utils;
 
+import java.math.BigInteger;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.security.spec.KeySpec;
-import java.util.Base64;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
-import io.micrometer.common.lang.NonNull;
+import lombok.NonNull;
 
 public class PBKDF2PasswordEncoder {
     private final String ALGORITHM = "PBKDF2WithHmacSHA1";
 
     public String encode(@NonNull String password) {
-        SecureRandom secureRandom = new SecureRandom();
-        byte[] salt = new byte[16];
-        secureRandom.nextBytes(salt);
-
-        KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, 65536, 128);
         try {
-            SecretKeyFactory factory = SecretKeyFactory.getInstance(ALGORITHM);
-            byte[] hash = factory.generateSecret(spec).getEncoded();
-            return Base64.getEncoder().encodeToString(hash);
+            int iterations = 1000;
+            char[] chars = password.toCharArray();
+            byte[] salt = getSalt();
+
+            PBEKeySpec spec = new PBEKeySpec(chars, salt, iterations, 64 * 8);
+            SecretKeyFactory skf = SecretKeyFactory.getInstance(ALGORITHM);
+
+            byte[] hash = skf.generateSecret(spec).getEncoded();
+            return iterations + ":" + toHex(salt) + ":" + toHex(hash);
+
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RuntimeException("Password encode error", e);
         }
+        return null;
     }
 
-    public boolean verify(@NonNull String password, @NonNull String storedPassword) {
+    public boolean verify(@NonNull String originalPassword, @NonNull String storedPassword) {
         try {
             String[] parts = storedPassword.split(":");
-            if (parts.length != 2) {
-                throw new IllegalArgumentException("Invalid format of saved password");
+            int iterations = Integer.parseInt(parts[0]);
+
+            byte[] salt = fromHex(parts[1]);
+            byte[] hash = fromHex(parts[2]);
+
+            PBEKeySpec spec = new PBEKeySpec(originalPassword.toCharArray(),
+                    salt, iterations, hash.length * 8);
+            SecretKeyFactory skf = SecretKeyFactory.getInstance(ALGORITHM);
+            byte[] testHash = skf.generateSecret(spec).getEncoded();
+
+            int diff = hash.length ^ testHash.length;
+            for (int i = 0; i < hash.length && i < testHash.length; i++) {
+                diff |= hash[i] ^ testHash[i];
             }
-            byte[] salt = Base64.getDecoder().decode(parts[0]);
-            byte[] storedHash = Base64.getDecoder().decode(parts[1]);
+            return diff == 0;
 
-            KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, 65536, 128);
-            SecretKeyFactory factory = SecretKeyFactory.getInstance(ALGORITHM);
-            byte[] computedHash = factory.generateSecret(spec).getEncoded();
-
-            return slowEquals(storedHash, computedHash);
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RuntimeException("Error checking password", e);
         }
+        return false;
     }
 
-    private boolean slowEquals(byte[] a, byte[] b) {
-        if (a.length != b.length) {
-            return false;
+    private byte[] fromHex(String hex) throws NoSuchAlgorithmException {
+        byte[] bytes = new byte[hex.length() / 2];
+        for (int i = 0; i < bytes.length; i++) {
+            bytes[i] = (byte) Integer.parseInt(hex.substring(2 * i, 2 * i + 2), 16);
         }
-        int result = 0;
-        for (int i = 0; i < a.length; i++) {
-            result |= a[i] ^ b[i];
+        return bytes;
+    }
+
+    private byte[] getSalt() throws NoSuchAlgorithmException {
+        SecureRandom sr = SecureRandom.getInstance("SHA1PRNG");
+        byte[] salt = new byte[16];
+        sr.nextBytes(salt);
+        return salt;
+    }
+
+    private String toHex(byte[] array) throws NoSuchAlgorithmException {
+        BigInteger bi = new BigInteger(1, array);
+        String hex = bi.toString(16);
+
+        int paddingLength = (array.length * 2) - hex.length();
+        if (paddingLength > 0) {
+            return String.format("%0" + paddingLength + "d", 0) + hex;
+        } else {
+            return hex;
         }
-        return result == 0;
     }
 }

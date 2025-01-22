@@ -45,7 +45,6 @@ public class SignUpController implements Controller {
                 response.getWriter().write(json);
                 return null;
             }
-
             try {
                 signUpService.signUp(signUpRequest);
                 response.getWriter().write("user successfully registered");

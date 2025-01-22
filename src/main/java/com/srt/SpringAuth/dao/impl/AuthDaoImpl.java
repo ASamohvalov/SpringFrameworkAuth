@@ -1,5 +1,8 @@
 package com.srt.SpringAuth.dao.impl;
 
+import java.util.List;
+import java.util.Optional;
+
 import com.srt.SpringAuth.dao.AuthDao;
 import com.srt.SpringAuth.models.User;
 
@@ -27,16 +30,22 @@ public class AuthDaoImpl implements AuthDao {
     }
 
     @Override
-    public boolean authenticate(String username, String password) {
+    public String getPassword(String username) {
+        List<String> passwords = entityManager
+                .createQuery("select u.password from User u where u.username = :username", String.class)
+                .setParameter("username", username)
+                .getResultList();
 
-        return false;
-    }
+        return passwords.isEmpty() ? null : passwords.get(0);
+    } 
 
     @Override
-    public String getPassword(String username) {
-        return entityManager
-                .createQuery("select u u.password from User where username = :username")
+    public User findByUsername(String username) {
+        List<User> result = entityManager
+                .createQuery("select u from User u where username = :username", User.class)
                 .setParameter("username", username)
-                .getSingleResult().toString();
-    } 
+                .getResultList();
+
+        return result.isEmpty() ? null : result.get(0);
+    }
 }
