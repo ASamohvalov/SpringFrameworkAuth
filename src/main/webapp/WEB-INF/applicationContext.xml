@@ -17,6 +17,7 @@
                      <props>
                             <prop key="/auth/signup">signUpController</prop>
                             <prop key="/auth/signin">signInController</prop>
+                            <prop key="/">userController</prop>
                      </props>
               </property>
        </bean>
@@ -30,11 +31,17 @@
               <constructor-arg ref="jsonMapper" />
               <constructor-arg ref="signInService" />
        </bean>
+       <bean id="userController" class="com.srt.SpringAuth.controllers.UserController">
+              <constructor-arg ref="restControllerUtil" />
+              <constructor-arg ref="jsonMapper" />
+       </bean>
 
        <!-- utils -->
        <bean id="jsonMapper" class="com.fasterxml.jackson.databind.json.JsonMapper" />
        <bean id="passwordEncoder" class="com.srt.SpringAuth.utils.PBKDF2PasswordEncoder" />
-       <bean id="restControllerUtil" class="com.srt.SpringAuth.utils.RestControllerUtil" />
+       <bean id="restControllerUtil" class="com.srt.SpringAuth.utils.RestControllerUtil">
+              <constructor-arg ref="authenticationService" />
+       </bean>
        <bean id="validator"
               class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean" />
        <bean id="hmacSha256" class="com.srt.SpringAuth.utils.HmacSha256" />

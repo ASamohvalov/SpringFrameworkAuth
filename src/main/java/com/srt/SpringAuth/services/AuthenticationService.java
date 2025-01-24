@@ -14,8 +14,7 @@ public class AuthenticationService {
     private HmacSha256 hmacSha256;
 
     public String authenticate(User user) {
-        byte[] decodedBytes = Base64.getDecoder().decode(secretKey);
-        String decodedSecretKey = new String(decodedBytes);
+        String decodedSecretKey = decodeSecretKey();
 
         String header = "{ \"alg\": \"HS256\", \"typ\": \"JWT\" }";
         String payload = String.format(
@@ -24,11 +23,21 @@ public class AuthenticationService {
 
         String encodedHeader = Base64.getEncoder().encodeToString(header.getBytes());
         String encodedPayload = Base64.getEncoder().encodeToString(payload.getBytes());
-
         String unsignedToken = encodedHeader + "." + encodedPayload;
-        
-        String encodedSignature = hmacSha256.encode(decodedSecretKey, unsignedToken);
 
+        String encodedSignature = hmacSha256.encode(decodedSecretKey, unsignedToken);
         return encodedHeader + "." + encodedPayload + "." + encodedSignature;
+    }
+
+    public boolean validateJwt(String jwt) {
+        String decodedSecretKey = decodeSecretKey();
+        String[] dividedJwt = jwt.split("[.]");
+        return dividedJwt.length == 3 && 
+                hmacSha256.encode(decodedSecretKey, dividedJwt[0] + "." + dividedJwt[1]).equals(dividedJwt[2]);
+    }
+
+    private String decodeSecretKey() {
+        byte[] decodedBytes = Base64.getDecoder().decode(secretKey);
+        return new String(decodedBytes);
     }
 }
