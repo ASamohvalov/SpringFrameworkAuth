@@ -1,18 +1,17 @@
 package com.srt.SpringAuth.dao.impl;
 
 import java.util.List;
-import java.util.Optional;
 
 import com.srt.SpringAuth.dao.AuthDao;
 import com.srt.SpringAuth.models.User;
 
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 public class AuthDaoImpl implements AuthDao {
-    @PersistenceContext
-    private EntityManager entityManager;
+    private final EntityManager entityManager;
 
     @Override
     public boolean isUsernameExists(String username) {
