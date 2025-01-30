@@ -6,8 +6,8 @@ import org.springframework.lang.Nullable;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.srt.SpringAuth.dto.jwt.JwtAuthDto;
 import com.srt.SpringAuth.utils.RestControllerUtil;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,18 +27,12 @@ public class UserController implements Controller {
         response.setContentType("application/json");
 
         String json = request.getReader().lines().collect(Collectors.joining());
-        
+        JwtAuthDto jwt;
+
         if (controllerUtil.validatePostRequest(request, response) && 
-                controllerUtil.isJsonValid(response, json, jsonMapper)) {
-            JsonNode jsonNode = jsonMapper.readTree(json);
-            if (!jsonNode.has("jwt")) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().write("jwt not send");
-                return null;
-            }
-            if (controllerUtil.isAuthenticate(jsonNode.get("jwt").asText(), response)) {
-                response.getWriter().write("hello user");
-            }
+                controllerUtil.isJsonValid(response, json, jsonMapper) && 
+                (jwt = controllerUtil.isAuthenticate(json, response)) != null) {
+            response.getWriter().write(String.format("{ \"message\": \"hello user\", \"jwt\": %s }}", jwt.toString()));
         }
         return null;
     }

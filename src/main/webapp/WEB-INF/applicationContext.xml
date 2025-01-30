@@ -41,6 +41,7 @@
        <bean id="passwordEncoder" class="com.srt.SpringAuth.utils.PBKDF2PasswordEncoder" />
        <bean id="restControllerUtil" class="com.srt.SpringAuth.utils.RestControllerUtil">
               <constructor-arg ref="authenticationService" />
+              <constructor-arg ref="jsonMapper" />
        </bean>
        <bean id="validator"
               class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean" />
@@ -61,6 +62,8 @@
        <bean id="authenticationService" class="com.srt.SpringAuth.services.AuthenticationService">
               <property name="secretKey" value="${jwt.secretKey}" />
               <property name="hmacSha256" ref="hmacSha256" />
+              <property name="jsonMapper" ref="jsonMapper" />
+              <property name="authDao" ref="authDao" />
        </bean>
 
        <!-- data -->

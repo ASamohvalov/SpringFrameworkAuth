@@ -7,10 +7,12 @@ import java.util.stream.Collectors;
 
 import com.srt.SpringAuth.dao.AuthDao;
 import com.srt.SpringAuth.dto.SignInRequest;
+import com.srt.SpringAuth.dto.jwt.JwtAuthDto;
 import com.srt.SpringAuth.exceptions.AuthenticationFailedException;
 import com.srt.SpringAuth.models.User;
 import com.srt.SpringAuth.utils.PBKDF2PasswordEncoder;
 
+import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +24,8 @@ public class SignInService {
     private final Validator validator;
     private final AuthenticationService authenticationService;
 
-    public String signIn(SignInRequest request) throws AuthenticationFailedException {
+    @Transactional
+    public JwtAuthDto signIn(SignInRequest request) throws AuthenticationFailedException {
         User user = authDao.findByUsername(request.getUsername());
         if (user == null || !passwordEncoder.verify(request.getPassword(), user.getPassword())) {
             throw new AuthenticationFailedException("incorrect password or username");

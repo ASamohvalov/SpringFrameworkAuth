@@ -7,4 +7,5 @@ public interface AuthDao {
     void save(User user); 
     String getPassword(String username);
     User findByUsername(String username);
+    String getTokenById(Long id);
 }
