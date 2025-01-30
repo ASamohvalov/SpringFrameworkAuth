@@ -47,4 +47,14 @@ public class AuthDaoImpl implements AuthDao {
 
         return result.isEmpty() ? null : result.get(0);
     }
+
+    @Override
+    public String getTokenById(Long id) {
+        List<String> result = entityManager
+                .createQuery("select u.token from User u where id = :id", String.class)
+                .setParameter("id", id)
+                .getResultList();
+
+        return result.isEmpty() ? null : result.get(0);
+    }
 }

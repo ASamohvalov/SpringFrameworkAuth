@@ -45,9 +45,9 @@ public class SignInController implements Controller {
                 return null;
             }
             try {
-                String jwt = signInService.signIn(signInRequest);
+                String jwt = jsonMapper.writeValueAsString(signInService.signIn(signInRequest));
                 response.getWriter().write(
-                        String.format("{ \"message\": \"user successfully authenticated\", \"jwt\": \"%s\" }", jwt)
+                        String.format("{ \"message\": \"user successfully authenticated\", \"jwt\": %s }", jwt)
                 );
             } catch (AuthenticationFailedException e) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
